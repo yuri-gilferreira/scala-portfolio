@@ -1,0 +1,4 @@
+[debug] [backend] Classpath dependencies List()
+[debug] [backend] Dependencies from configurations List()
+[debug] Bloop wrote the configuration of project 'backend' to '/Users/64200/Documents/scala-portfolio/backend/.bloop/backend.json'
+[success] Generated .bloop/backend.json
