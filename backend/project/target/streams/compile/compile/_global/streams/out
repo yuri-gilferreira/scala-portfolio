@@ -1,4 +1,4 @@
-[error] /Users/64200/Documents/scala-portfolio/backend/project/Dependencies.scala:37:5: ')' expected but string literal found.
+[error] C:\Users\yurig\Documents\projetos\scala-portfolio\backend\project\Dependencies.scala:39:5: ')' expected but string literal found.
 [error]     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
 [error]     ^
 [error] one error found

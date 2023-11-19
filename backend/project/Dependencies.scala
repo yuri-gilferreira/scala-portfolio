@@ -4,6 +4,7 @@ object Dependencies {
   lazy val scalaTest = Seq(
     "org.scalatest" %% "scalatest" % "3.2.13" % Test,
     "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % Test,
+     "com.holdenkarau" %% "spark-testing-base" % "3.5.0_1.4.7" % Test
   )
 
   val circeVersion = "0.13.0"
@@ -31,8 +32,8 @@ object Dependencies {
      
     // spark - excluding slf4j-log4j12 to avoid SLF4J multiple bindings issue
     "org.apache.spark" %% "spark-sql" % sparkVersion exclude("org.slf4j", "slf4j-log4j12"),
+    "com.lihaoyi" %% "requests" % "0.6.5", 
     
-    "com.lihaoyi" %% "requests" % "0.6.5",    
     // logging
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
     "ch.qos.logback" % "logback-classic" % "1.2.3"

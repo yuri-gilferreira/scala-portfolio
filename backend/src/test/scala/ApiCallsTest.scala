@@ -9,11 +9,6 @@ class ApiCallTest extends AnyFunSuite {
   test("fetchDataFromAPI should return successful result") {
     val testing = ApiCallAlphaVantage.fetchDataFromAPI("PEP", outputsize = "full")
     print(testing)
-
-    // You might want to assert something about the results here.
-    // For example, if fetchDataFromAPI returns a boolean indicating success/failure,
-    // you could do: assert(ApiCalls.fetchDataFromAPI("TIME_SERIES_DAILY", "IBM"))
   }
 
-  // Additional tests as needed
 }

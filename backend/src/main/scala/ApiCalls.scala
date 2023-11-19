@@ -1,6 +1,5 @@
 package com.YuriFerreira.PortfolioOptimization
 
-import requests._
 import scala.util.{Try, Success, Failure}
 
 
@@ -22,7 +21,6 @@ object ApiCallAlphaVantage {
 
    Try(requests.get(url, params = params)) match {
       case Success(response) if response.statusCode == 200 =>
-        // println(Some(response.text()))
         Some(response.text())
       case Success(response) =>
         println(s"Failed to fetch data. Status code: ${response.statusCode}")
