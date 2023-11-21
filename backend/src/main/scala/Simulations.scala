@@ -50,6 +50,39 @@ def runMonteCarloSimulationSpark(
   results.toDF("Return", "Risk", "Weights")
 }
 
+
+def runMonteCarloSimulationSparkControlled(
+    meanReturns: Array[Double], 
+    covarianceMatrix: Array[Array[Double]], 
+    numSimulations: Int, 
+    spark: SparkSession,
+    seed: Option[Long] = None
+): DataFrame = {
+  import spark.implicits._
+
+  val numAssets = meanReturns.length
+  val simulations = spark.sparkContext.parallelize(1 to numSimulations)
+
+  val results = simulations.map { _ =>
+    val random = new Random(seed.getOrElse(System.nanoTime()))
+
+    // Generating weights in a more controlled manner
+    val weights = Array.fill(numAssets)(random.nextDouble())
+    val totalWeight = weights.sum
+    val normalizedWeights = weights.map(_ / totalWeight)
+
+    // Ensure more uniform distribution
+    val shuffledWeights = random.shuffle(normalizedWeights.toList).toArray
+
+    val portfolioReturn = calculatePortfolioReturn(shuffledWeights, meanReturns)
+    val portfolioRisk = calculatePortfolioRisk(shuffledWeights, covarianceMatrix)
+
+    (portfolioReturn, portfolioRisk, shuffledWeights.mkString(","))
+  }
+
+  results.toDF("Return", "Risk", "Weights")
+}
+
   def main(args: Array[String]): Unit = {
     val meanReturns = Array(0.12, 0.08) 
     val covarianceMatrix = Array(

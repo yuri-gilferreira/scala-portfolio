@@ -20,27 +20,33 @@ object Main extends App {
    
    import spark.implicits._
 
-    val stockList = List("TSLA", "AMZN")
-    val PortfolioDailyReturn = MainCalculations.dailyReturnMultipleStocks(stockList, spark)
-    val dataFolder = "../data"
-
+   
+    val stockList = List("IBM", "AAPL")
+    val min_date = "2018-10-01"
+    val max_date = "2023-10-10"
+    val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, min_date, max_date)
+    val PortfolioDailyReturn = MainCalculations.dailyReturnMultipleStocksOptimized(dfMutipleStocks)
     val (meanReturnDF, volatilityDF) = MainCalculations.createReturnAndVolatilityDataFrames(PortfolioDailyReturn, stockList, spark)
-    val meanReturns: Array[Double] = meanReturnDF.select("MeanReturn").as[Double].collect()
+
     
     val correlationMatrixDF = MainCalculations.calculateCorrelationMatrix(PortfolioDailyReturn, stockList, spark)
     val covarianceMatrixDF = MainCalculations.calculateCovarianceMatrix(PortfolioDailyReturn, stockList, spark)
+    
+
+    val dataFolder = "../data"
+
+    val meanReturns: Array[Double] = meanReturnDF.select("MeanReturn").as[Double].collect() 
     val covarianceMatrix: Array[Array[Double]] = covarianceMatrixDF.drop("Ticker1").collect().map { 
       row => row.toSeq.toArray.map(_.toString.toDouble)
    }
     
     val numSimulations = 10000
-    val results = Simulations.runMonteCarloSimulationSpark(meanReturns, covarianceMatrix, numSimulations, spark)
+    val results = Simulations.runMonteCarloSimulationSparkControlled(meanReturns, covarianceMatrix, numSimulations, spark)
     results.show()
-    println("Current working directory: " + new java.io.File(".").getCanonicalPath)
-
     SparkFunctions.saveDataFrameToCSV(results, dataFolder, "simulations.csv")
     SparkFunctions.saveDataFrameToCSV(meanReturnDF, dataFolder, "mean_returns.csv")
     SparkFunctions.saveDataFrameToCSV(correlationMatrixDF, dataFolder,  "correlation_matrix.csv")
+    SparkFunctions.saveDataFrameToCSV(covarianceMatrixDF, dataFolder,  "covariance_matrix.csv")
     SparkFunctions.saveDataFrameToCSV(volatilityDF, dataFolder,  "volatility.csv")
 
 

@@ -11,27 +11,58 @@ import org.apache.spark.sql.functions._
 case class SparkRDDConfig(name: String, masterUrl: String, transactionFile: String)
 
 object MainCalculations {
-  
-def dailyReturnSingleStock(ticker: String, spark: SparkSession): DataFrame = {
-    val apiString = ApiCallAlphaVantage.fetchDataFromAPI(ticker, outputsize = "full")
-    val fullDataset = SparkFunctions.loadData(spark, apiString).orderBy(col("timestamp").desc)
 
-    val windowSpec = Window.orderBy(col("timestamp").desc)
-    val dailyReturnColumn = (col("adjusted_close") - lag(col("adjusted_close"), 1).over(windowSpec)) /
-                          lag(col("adjusted_close"), 1).over(windowSpec) * 100.0
+def getSingleStock(ticker: String, spark: SparkSession, min_date: String, max_date: String): DataFrame = {
+    val apiString = ApiCallAlphaVantage.fetchDataFromAPI(ticker, outputsize = "full")
+    val fullDataset = SparkFunctions.loadData(spark, apiString).orderBy(col("timestamp").asc)
+    val filteredDataet = fullDataset.filter(col("timestamp") >= min_date && col("timestamp") <= max_date)
+    filteredDataet.select(col("timestamp"), col("adjusted_close").alias(s"${ticker}_adjusted_close"))
+}
+
+def getMultipleStocks(tickers: List[String], spark: SparkSession, min_date: String, max_date: String): DataFrame = {
+    val dfs = tickers.map(ticker => getSingleStock(ticker, spark, min_date, max_date))
+    dfs.reduce(_.join(_, Seq("timestamp"), "inner")).orderBy(col("timestamp").desc)
+}
+
+def dailyReturnSingleStock(dataset:DataFrame, ticker: String): DataFrame = {
+    
+    val windowSpec = Window.orderBy(col("timestamp").asc)
+    val dailyReturnColumn = (col(s"${ticker}_adjusted_close") - lag(col(s"${ticker}_adjusted_close"), 1).over(windowSpec)) /
+                          lag(col(s"${ticker}_adjusted_close"), 1).over(windowSpec) * 100.0
   
-    val result = fullDataset
+    val result = dataset
       .withColumn("daily_return", dailyReturnColumn)
       .select(col("timestamp"), col("daily_return").alias(s"${ticker}_daily_return"))
-      .orderBy(col("timestamp").desc)  // This will ensure the result is also in descending order
+      .orderBy(col("timestamp").asc) 
 
     result
 }
   
-def dailyReturnMultipleStocks(tickers: List[String], spark: SparkSession): DataFrame = {
-    val dfs = tickers.map(ticker => dailyReturnSingleStock(ticker, spark))
-    dfs.reduce(_.join(_, Seq("timestamp"), "inner")).orderBy(col("timestamp").desc)
+def dailyReturnMultipleStocks(tickers: List[String], spark: SparkSession, min_date: String, max_date: String): DataFrame = {
+    val dataset = getMultipleStocks(tickers, spark, min_date, max_date)
+    val result = tickers.map(ticker => dailyReturnSingleStock(dataset, ticker))
+    result.reduce(_.join(_, Seq("timestamp"), "inner")).orderBy(col("timestamp").desc)
 }
+
+
+
+def dailyReturnMultipleStocksOptimized(allStocksData: DataFrame): DataFrame = {
+  val windowSpec = Window.orderBy(col("timestamp").asc)
+  val dailyReturns = allStocksData.columns
+    .filter(_.endsWith("_adjusted_close"))
+    .map { colName =>
+      val ticker = colName.replace("_adjusted_close", "")
+      val dailyReturnColumn = (col(colName) - lag(col(colName), 1).over(windowSpec)) /
+                              lag(col(colName), 1).over(windowSpec) * 100.0
+
+      allStocksData.withColumn(s"${ticker}_daily_return", dailyReturnColumn)
+        .select(col("timestamp"), col(s"${ticker}_daily_return"))
+    }
+
+  val combinedDailyReturns = dailyReturns.reduce(_.join(_, Seq("timestamp"), "inner"))
+  combinedDailyReturns.orderBy(col("timestamp").desc)
+}
+
 
 def calculateMeanReturn(dataFrame: DataFrame, ticker: String): Double = {
   val meanDailyReturn = dataFrame
@@ -89,6 +120,13 @@ def calculateCorrelationMatrix(dataFrame: DataFrame, tickers: Seq[String], spark
   correlationMatrixDF
 }
 
+def annualizeCovarianceMatrix(covarianceMatrixDF: DataFrame): DataFrame = {
+  covarianceMatrixDF.columns.foldLeft(covarianceMatrixDF) { (df, colName) =>
+    df.withColumn(colName, col(colName) * scala.math.sqrt(252))
+  }
+}
+
+
 def calculateCovarianceMatrix(dataFrame: DataFrame, tickers: Seq[String], spark: SparkSession): DataFrame = {
   import spark.implicits._
 
@@ -106,8 +144,8 @@ def calculateCovarianceMatrix(dataFrame: DataFrame, tickers: Seq[String], spark:
 
   // Pivoting the DataFrame to get the matrix format
   val covarianceMatrixDF = covarianceDF.groupBy("Ticker1").pivot("Ticker2").agg(first("Covariance"))
-
-  covarianceMatrixDF
+  val annualizedcovarianceMatrixDF = annualizeCovarianceMatrix(covarianceMatrixDF)
+  annualizedcovarianceMatrixDF
 }
 
   def main(args: Array[String]): Unit = {
@@ -116,23 +154,27 @@ def calculateCovarianceMatrix(dataFrame: DataFrame, tickers: Seq[String], spark:
       .master("local[*]") // Use "local[*]" for local testing; replace with your cluster settings for production
       .getOrCreate()
     val stockList = List("IBM", "AAPL", "MSFT")
-    val PortfolioDailyReturn = dailyReturnMultipleStocks(stockList, spark)
-
+    val min_date = "2018-10-01"
+    val max_date = "2023-10-10"
+    val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, min_date, max_date)
+    val PortfolioDailyReturn = MainCalculations.dailyReturnMultipleStocksOptimized(dfMutipleStocks)
     val (meanReturnDF, volatilityDF) = createReturnAndVolatilityDataFrames(PortfolioDailyReturn, stockList, spark)
+
+    
+    val correlationMatrixDF = calculateCorrelationMatrix(PortfolioDailyReturn, stockList, spark)
+    val covarianceMatrixDF = calculateCovarianceMatrix(PortfolioDailyReturn, stockList, spark)
+    
     println("Mean Return DataFrame")
     meanReturnDF.show()
 
     println("Volatility DataFrame")
     volatilityDF.show()
+
+    println("Correlation Matrix")
+    correlationMatrixDF.show()
     
-    // val correlationMatrixDF = calculateCorrelationMatrix(PortfolioDailyReturn, stockList, spark)
-    // val covarianceMatrixDF = calculateCovarianceMatrix(PortfolioDailyReturn, stockList, spark)
-    
-    // println("Correlation Matrix")
-    // correlationMatrixDF.show()
-    
-    // println("Covariance Matrix")
-    // covarianceMatrixDF.show()
+    println("Covariance Matrix")
+    covarianceMatrixDF.show()
 
   }
 
