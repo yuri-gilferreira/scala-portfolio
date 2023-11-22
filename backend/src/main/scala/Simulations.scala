@@ -3,6 +3,7 @@ package com.YuriFerreira.PortfolioOptimization
 // import com.YuriFerreira.PortfolioOptimization.MainCalculations
 import org.apache.spark.sql.{SparkSession, DataFrame}
 import scala.util.Random
+import org.apache.spark.sql.functions._
 
 
 object Simulations {
@@ -25,8 +26,9 @@ def calculatePortfolioReturn(weights: Array[Double], meanReturns: Array[Double])
 def runMonteCarloSimulationSpark(
     meanReturns: Array[Double], 
     covarianceMatrix: Array[Array[Double]], 
-    numSimulations: Int, 
     spark: SparkSession,
+    numSimulations: Int = 10000, 
+    riskFreeRate: Double = 0.02,
     seed: Option[Long] = None
 ): DataFrame = {
   import spark.implicits._
@@ -43,19 +45,28 @@ def runMonteCarloSimulationSpark(
 
     val portfolioReturn = calculatePortfolioReturn(normalizedWeights, meanReturns)
     val portfolioRisk = calculatePortfolioRisk(normalizedWeights, covarianceMatrix)
+    val sharpeRatio = calculateSharpeRatio(portfolioReturn, portfolioRisk, riskFreeRate)
+    val realReturn = portfolioReturn - riskFreeRate
 
-    (portfolioReturn, portfolioRisk, normalizedWeights.mkString(","))
+    (portfolioReturn, portfolioRisk, realReturn, sharpeRatio, normalizedWeights.mkString(","))
   }
 
-  results.toDF("Return", "Risk", "Weights")
+  val resultsDf = results.toDF("return", "risk", "real_return", "sharpe_ratio", "weights")
+  resultsDf
 }
 
+def calculateSharpeRatio(portfolioReturn: Double, portfolioRisk: Double, riskFreeRate: Double): Double = {
+
+  val sharpeRatio = (portfolioReturn - riskFreeRate) / portfolioRisk
+  sharpeRatio
+}
 
 def runMonteCarloSimulationSparkControlled(
     meanReturns: Array[Double], 
     covarianceMatrix: Array[Array[Double]], 
-    numSimulations: Int, 
     spark: SparkSession,
+    riskFreeRate: Double = 0.02,
+    numSimulations: Int = 10000, 
     seed: Option[Long] = None
 ): DataFrame = {
   import spark.implicits._
@@ -76,12 +87,53 @@ def runMonteCarloSimulationSparkControlled(
 
     val portfolioReturn = calculatePortfolioReturn(shuffledWeights, meanReturns)
     val portfolioRisk = calculatePortfolioRisk(shuffledWeights, covarianceMatrix)
+    val sharpeRatio = calculateSharpeRatio(portfolioReturn, portfolioRisk, riskFreeRate)
+    val realReturn = portfolioReturn - riskFreeRate
 
-    (portfolioReturn, portfolioRisk, shuffledWeights.mkString(","))
+    (portfolioReturn, portfolioRisk, realReturn, sharpeRatio, shuffledWeights.mkString(","))
   }
 
-  results.toDF("Return", "Risk", "Weights")
+  val resultsDf = results.toDF("return", "risk", "real_return", "sharpe_ratio", "weights")
+  resultsDf
 }
+
+def getOriginalWeightsReturns(
+  weights: Array[Double], 
+  meanReturns: Array[Double],
+  covarianceMatrix: Array[Array[Double]],
+  spark: SparkSession,
+  riskFreeRate: Double = 0.02,
+   ): DataFrame = {
+    import spark.implicits._
+  val portfolioReturn = calculatePortfolioReturn(weights, meanReturns)
+  val portfolioRisk = calculatePortfolioRisk(weights, covarianceMatrix)
+  val sharpeRatio = calculateSharpeRatio(portfolioReturn, portfolioRisk, riskFreeRate)
+  val realReturn = portfolioReturn - riskFreeRate
+  val OriginalWeightsResult = Seq((portfolioReturn, portfolioRisk, realReturn, sharpeRatio, weights.mkString(",")))
+  val OriginalWeightsResultDF = OriginalWeightsResult.toDF("return", "risk", "real_return", "sharpe_ratio", "weights")
+  OriginalWeightsResultDF
+
+}
+
+def getBestResults(results: DataFrame, OriginalWeightsResultDF: DataFrame): DataFrame = {
+
+  val bestSharpeResults = results
+    .orderBy(col("sharpe_ratio").desc)
+    .limit(1)
+    .withColumn("type", lit("sharpe"))
+
+  val bestRiskResults = results
+    .orderBy(col("risk").asc)
+    .limit(1)
+    .withColumn("type", lit("risk"))
+  
+  val originalWeightDf = OriginalWeightsResultDF.withColumn("type", lit("original"))
+
+  val joinedResults = bestSharpeResults.union(bestRiskResults).union(originalWeightDf)
+  joinedResults
+
+}
+
 
   def main(args: Array[String]): Unit = {
     val meanReturns = Array(0.12, 0.08) 
@@ -94,8 +146,10 @@ def runMonteCarloSimulationSparkControlled(
       .appName("Portfolio-Optimization")
       .master("local[*]") 
       .getOrCreate()
-    val results = runMonteCarloSimulationSpark(meanReturns, covarianceMatrix, numSimulations, spark)
-    results.show()
+    val results = runMonteCarloSimulationSpark(meanReturns, covarianceMatrix, spark, numSimulations, 0.02)
+    val originalWeightDf = getOriginalWeightsReturns(Array(0.5, 0.5), meanReturns, covarianceMatrix, spark)
+    val bestResults = getBestResults(results,originalWeightDf)
+    bestResults.show()
   }
 
 
