@@ -48,7 +48,7 @@ def getCompoundReturnSinglePortfolio(portfolioReturns: DataFrame, portfolioName:
   val windowSpec = Window.orderBy(col("timestamp")).rowsBetween(Window.unboundedPreceding, 0)
   val compoundReturns = portfolioReturns.withColumn(
     s"portfolio_${portfolioName}_compound_return",
-    exp(sum(log(col(s"portfolio_${portfolioName}_daily_return") + 1)).over(windowSpec)) - 1
+    exp(sum(log(col(s"portfolio_${portfolioName}_daily_return")/100 + 1)).over(windowSpec))
   )
   compoundReturns
 }

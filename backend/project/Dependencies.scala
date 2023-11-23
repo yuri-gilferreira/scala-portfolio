@@ -18,6 +18,7 @@ object Dependencies {
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
     "io.circe" %% "circe-literal" % circeVersion,
+    "com.github.scopt" %% "scopt" % "4.0.0",
 
     // support for typesafe configuration
     "com.github.pureconfig" %% "pureconfig" % pureconfigVersion,

@@ -21,6 +21,7 @@
             "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\io\\circe\\circe-generic_2.13\\0.13.0\\circe-generic_2.13-0.13.0.jar",
             "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\io\\circe\\circe-parser_2.13\\0.13.0\\circe-parser_2.13-0.13.0.jar",
             "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\io\\circe\\circe-literal_2.13\\0.13.0\\circe-literal_2.13-0.13.0.jar",
+            "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\com\\github\\scopt\\scopt_2.13\\4.0.0\\scopt_2.13-4.0.0.jar",
             "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\com\\github\\pureconfig\\pureconfig_2.13\\0.15.0\\pureconfig_2.13-0.15.0.jar",
             "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-lang\\modules\\scala-parallel-collections_2.13\\1.0.4\\scala-parallel-collections_2.13-1.0.4.jar",
             "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\apache\\spark\\spark-sql_2.13\\3.5.0\\spark-sql_2.13-3.5.0.jar",
@@ -498,6 +499,23 @@
                             "name": "circe-literal_2.13",
                             "classifier": "sources",
                             "path": "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\io\\circe\\circe-literal_2.13\\0.13.0\\circe-literal_2.13-0.13.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.github.scopt",
+                    "name": "scopt_2.13",
+                    "version": "4.0.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "scopt_2.13",
+                            "path": "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\com\\github\\scopt\\scopt_2.13\\4.0.0\\scopt_2.13-4.0.0.jar"
+                        },
+                        {
+                            "name": "scopt_2.13",
+                            "classifier": "sources",
+                            "path": "C:\\Users\\yurig\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\com\\github\\scopt\\scopt_2.13\\4.0.0\\scopt_2.13-4.0.0-sources.jar"
                         }
                     ]
                 },
