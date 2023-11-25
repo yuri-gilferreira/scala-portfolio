@@ -48,7 +48,7 @@ def show_inputs_page():
                 "numSimulations": num_simulations,
                 "apiKey": user_api_key
             }
-            st.write(data)
+            # st.write(data)
             st.write("Running optimization...")
             response = requests.post("http://localhost:8080/run-optimization", json=data)
             if response.status_code == 200:
