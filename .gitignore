@@ -18,6 +18,9 @@
 .DS_Store
 Thumbs.db
 
+# Secrets
+secrets
+
 # Scala / SBT (backend)
 backend/target/
 backend/project/target/
