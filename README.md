@@ -3,6 +3,8 @@
 ## Introduction
 This Portfolio Optimization Tool is designed to help investors create an efficient portfolio using Modern Portfolio Theory (MPT). It leverages a Scala backend for heavy-duty data processing and Python with Streamlit for an interactive front-end experience.
 
+![Risk Return](resources/risk_return.png)
+
 ## Features
 - Real-time stock data retrieval from AlphaVantage API.
 - Sophisticated algorithms to calculate historical returns, volatility, and stock correlations.
@@ -26,6 +28,13 @@ cd scala-portfolio
 ```
 
 ### Install Dependencies
+
+
+#### Java
+Scala and sbt run on the Java Virtual Machine (JVM), so you'll need Java installed:
+- You can download Java from [Oracle's Java Downloads](https://www.oracle.com/java/technologies/javase-downloads.html) or use an open-source alternative like [AdoptOpenJDK](https://adoptopenjdk.net/).
+- Set the `JAVA_HOME` environment variable to your Java installation directory.
+- Verify your installation by running `java -version` in the command line.
 
 #### Scala Backend
 Ensure you have Scala and sbt installed. If not, follow the instructions here:
@@ -135,8 +144,21 @@ The Results tab presents the outcome of the portfolio optimization in various fo
 
   ![Tables ](resources/results_tables.png)
 
+<table>
+<tr>
+<td>
+
 ### Navigating Through the Application
 Navigation through the application is done using the sidebar, which allows you to easily switch between different tabs. Each tab provides a unique aspect of portfolio analysis and optimization, guiding you through the entire process step by step.
+
+</td>
+<td>
+
+![Alt text](resources/navigation.png)
+
+</td>
+</tr>
+</table>
 
 
 ## Architecture Diagram
@@ -165,8 +187,7 @@ Below is the architecture diagram of the Portfolio Optimization Tool. This diagr
 |   |   |           PortfolioReturns.scala
 |   |   |           Simulations.scala
 |   |   |           SparkFunctions.scala
-|   |   |           WebServer.scala
-|   |   |           
+|   |   |           WebServer.scala       
 |   |   \---test
 |   |       \---scala
 |   |               ApiCallsTest.scala
