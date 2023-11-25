@@ -123,3 +123,17 @@ The Results tab presents the outcome of the portfolio optimization in various fo
 
 ### Navigating Through the Application
 Navigation through the application is done using the sidebar, which allows you to easily switch between different tabs. Each tab provides a unique aspect of portfolio analysis and optimization, guiding you through the entire process step by step.
+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. The MIT License is a permissive license that is short and to the point. It lets people do anything they want with your code as long as they provide attribution back to you and don’t hold you liable.
+
+## Contact
+
+For support or inquiries about the Portfolio Optimization Tool, feel free to reach out. You can contact me in the following ways:
+
+- **Email**: [yuri.gferreira16@gmail.com](mailto:yuri.gferreira16@gmail.com)
+- **LinkedIn**: [Yuri Gil Ferreira's LinkedIn](https://www.linkedin.com/in/yuri-ferreira-354a07154/) 
+
+Feel free to connect or follow for updates on this project and others, or for any questions and professional inquiries.
