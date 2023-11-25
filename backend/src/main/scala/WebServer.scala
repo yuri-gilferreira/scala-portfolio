@@ -5,6 +5,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import scala.util.{Failure, Success}
 
 import com.YuriFerreira.PortfolioOptimization.JsonFormats._
 import com.YuriFerreira.PortfolioOptimization.Main._
@@ -32,11 +33,19 @@ object WebServer {
   def main(args: Array[String]): Unit = {
     // Start the server on localhost and a specified port (e.g., 8080)
     val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)
+    println(s"Server online at http://localhost:8080/")
 
-    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-    scala.io.StdIn.readLine() // Let it run until user presses return
-    bindingFuture
-      .flatMap(_.unbind()) // Trigger unbinding from the port
-      .onComplete(_ => system.terminate()) // and shutdown when done
+    bindingFuture.onComplete {
+    case Success(binding) =>
+      println(s"Server is running at http://${binding.localAddress.getHostString}:${binding.localAddress.getPort}/")
+    case Failure(e) =>
+      println(s"Failed to bind to localhost:8080!", e)
+      system.terminate()
+  }
+    // println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+    // scala.io.StdIn.readLine() // Let it run until user presses return
+    // bindingFuture
+    //   .flatMap(_.unbind()) // Trigger unbinding from the port
+    //   .onComplete(_ => system.terminate()) // and shutdown when done
   }
 }
