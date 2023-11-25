@@ -1,0 +1,90 @@
+# General
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.seed
+*.db
+*.sql
+*.tar.gz
+*.zip
+*.gz
+*.swp
+*.swo
+*.bak
+*.tmp
+*~
+.DS_Store
+Thumbs.db
+
+# Scala / SBT (backend)
+backend/target/
+backend/project/target/
+backend/project/project/
+backend/.lib/
+backend/.bloop
+backend/.metals
+backend/.idea/
+backend/*.class
+backend/*.log
+backend/.vscode
+.metals
+
+# Scala-IDE / IntelliJ IDEA specific (backend)
+backend/.scala_dependencies
+backend/.worksheet
+
+# Python (frontend)
+frontend/__pycache__/
+frontend/*.py[cod]
+frontend/*$py.class
+
+# Python virtualenv (frontend)
+frontend/venv/
+frontend/.env
+.venv/
+
+# Jupyter Notebook (frontend)
+frontend/.ipynb_checkpoints
+
+# Python distribution / packaging (frontend)
+frontend/build/
+frontend/dist/
+frontend/*.egg-info/
+frontend/.eggs/
+frontend/parts/
+frontend/sdist/
+frontend/var/
+frontend/wheels/
+frontend/Pipfile.lock
+
+# Python test / coverage reports (frontend)
+frontend/htmlcov/
+frontend/.tox/
+frontend/.nox/
+frontend/.coverage
+frontend/.coverage.*
+frontend/.cache
+frontend/nosetests.xml
+frontend/coverage.xml
+frontend/*.cover
+frontend/.hypothesis/
+frontend/.pytest_cache/
+
+# Node modules (if using Node.js in frontend)
+frontend/node_modules/
+
+# Frontend build artifacts (if using a build tool like webpack)
+frontend/build/
+frontend/dist/
+
+# IDE specific settings
+.vscode/
+
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
