@@ -3,6 +3,7 @@ import ast
 import plotly.express as px
 import plotly.graph_objects as go
 import subprocess
+import requests
 from plotly.subplots import make_subplots
 
 
@@ -15,6 +16,15 @@ def round_weights_str(weights_str):
 def format_return_dataset(df):
     df['weights'] = df['weights'].apply(round_weights_str)
     df = df.round({'risk': 2, 'return': 2, 'real_return': 2, 'sharpe_ratio' : 2})
+    return df
+
+def format_correlation_matrix(df, tickers):
+    df.rename(columns={'Ticker1': 'Ticker'}, inplace=True)
+    df = df.set_index('Ticker').loc[tickers].reset_index()
+    return df
+
+def format_cov_matrix(df, tickers):
+    df['Ticker'] = tickers
     return df
 
 
@@ -160,4 +170,12 @@ def run_scala_script(tickers, weights):
         print(result.stdout)
     except subprocess.CalledProcessError as e:
         print("Error:", e.stderr)
+
+
+# Function to query AlphaVantage API
+def search_symbol(query, api_key):
+    url = f'https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords={query}&apikey={api_key}'
+    response = requests.get(url)
+    return response.json()
+
 

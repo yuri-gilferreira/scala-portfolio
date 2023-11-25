@@ -3,7 +3,9 @@ package com.YuriFerreira.PortfolioOptimization
 import com.YuriFerreira.PortfolioOptimization.ApiCallAlphaVantage
 import com.YuriFerreira.PortfolioOptimization.SparkFunctions
 
-import org.apache.spark.sql.{SparkSession, DataFrame}
+import org.apache.spark.sql.{SparkSession, DataFrame, Row}
+import org.apache.spark.sql.types.{StructField, StructType, StringType, DoubleType}
+
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 
@@ -12,15 +14,15 @@ case class SparkRDDConfig(name: String, masterUrl: String, transactionFile: Stri
 
 object MainCalculations {
 
-def getSingleStock(ticker: String, spark: SparkSession, min_date: String, max_date: String): DataFrame = {
-    val apiString = ApiCallAlphaVantage.fetchDataFromAPI(ticker, outputsize = "full")
+def getSingleStock(ticker: String, spark: SparkSession, apikey:String, min_date: String, max_date: String): DataFrame = {
+    val apiString = ApiCallAlphaVantage.fetchDataFromAPI(ticker, apikey,outputsize = "full")
     val fullDataset = SparkFunctions.loadData(spark, apiString).orderBy(col("timestamp").asc)
     val filteredDataet = fullDataset.filter(col("timestamp") >= min_date && col("timestamp") <= max_date)
     filteredDataet.select(col("timestamp"), col("adjusted_close").alias(s"${ticker}_adjusted_close"))
 }
 
-def getMultipleStocks(tickers: List[String], spark: SparkSession, min_date: String, max_date: String): DataFrame = {
-    val dfs = tickers.map(ticker => getSingleStock(ticker, spark, min_date, max_date))
+def getMultipleStocks(tickers: List[String], spark: SparkSession, apikey:String, min_date: String, max_date: String): DataFrame = {
+    val dfs = tickers.map(ticker => getSingleStock(ticker, spark, apikey, min_date, max_date))
     dfs.reduce(_.join(_, Seq("timestamp"), "inner")).orderBy(col("timestamp").desc)
 }
 
@@ -38,8 +40,8 @@ def dailyReturnSingleStock(dataset:DataFrame, ticker: String): DataFrame = {
     result
 }
   
-def dailyReturnMultipleStocks(tickers: List[String], spark: SparkSession, min_date: String, max_date: String): DataFrame = {
-    val dataset = getMultipleStocks(tickers, spark, min_date, max_date)
+def dailyReturnMultipleStocks(tickers: List[String], spark: SparkSession, apikey:String, min_date: String, max_date: String): DataFrame = {
+    val dataset = getMultipleStocks(tickers, spark, apikey,min_date, max_date)
     val result = tickers.map(ticker => dailyReturnSingleStock(dataset, ticker))
     result.reduce(_.join(_, Seq("timestamp"), "inner")).orderBy(col("timestamp").desc)
 }
@@ -98,26 +100,68 @@ def createReturnAndVolatilityDataFrames(dataFrame: DataFrame, tickers: Seq[Strin
   (meanReturnDF, volatilityDF)
 }
 
+// def calculateCorrelationMatrix(dataFrame: DataFrame, tickers: Seq[String], spark: SparkSession): DataFrame = {
+//   import spark.implicits._
+
+//   // Preparing column names with daily return suffix
+//   val tickersDaily = tickers.map(ticker => s"${ticker}_daily_return")
+
+//   // Calculating correlations for each unique pair of tickers
+//   val correlations = for {
+//     ticker1 <- tickersDaily
+//     ticker2 <- tickersDaily
+//   } yield {
+//     val corr = if (ticker1 == ticker2) 1.0 else dataFrame.stat.corr(ticker1, ticker2)
+//     (ticker1.replace("_daily_return", ""), ticker2.replace("_daily_return", ""), corr)
+//   }
+
+//   val correlationDF = correlations.toDF("Ticker1", "Ticker2", "Correlation")
+
+//   // Pivoting the DataFrame to get the matrix format
+//   val correlationMatrixDF = correlationDF
+//   .groupBy("Ticker1")
+//   .pivot("Ticker2",  tickers)
+//   .agg(first("Correlation"))
+
+//   correlationMatrixDF
+// }
+
 def calculateCorrelationMatrix(dataFrame: DataFrame, tickers: Seq[String], spark: SparkSession): DataFrame = {
   import spark.implicits._
 
   // Preparing column names with daily return suffix
-  val tickers_daily = tickers.map(ticker => s"${ticker}_daily_return")
+  // val tickersDaily = tickers.map(ticker => s"${ticker}_daily_return")
 
-  // Calculating correlations for each unique pair of tickers
+  // Calculating correlations for each pair of tickers, including self-correlation
   val correlations = for {
-    ticker1 <- tickers_daily
-    ticker2 <- tickers_daily
-    if ticker1 != ticker2 
-    corr = dataFrame.stat.corr(ticker1, ticker2)
-  } yield (ticker1.replace("_daily_return", ""), ticker2.replace("_daily_return", ""), corr)
+    ticker1 <- tickers
+    ticker2 <- tickers
+    corr = if (ticker1 == ticker2) 1.0 else dataFrame.stat.corr(s"${ticker1}_daily_return", s"${ticker2}_daily_return")
+  } yield (ticker1, ticker2, corr)
 
   val correlationDF = correlations.toDF("Ticker1", "Ticker2", "Correlation")
 
   // Pivoting the DataFrame to get the matrix format
-  val correlationMatrixDF = correlationDF.groupBy("Ticker1").pivot("Ticker2").agg(first("Correlation")).na.fill(1.0)
+  val pivotDF = correlationDF
+    .groupBy("Ticker1")
+    .pivot("Ticker2", tickers) // Use the original tickers sequence
+    .agg(first("Correlation"))
 
-  correlationMatrixDF
+  // Sort the DataFrame to match the original tickers order for rows
+  val orderedDF = pivotDF.orderBy($"Ticker1".asc)
+
+  // Ensure the DataFrame is symmetrical
+  val symmetricalDF = tickers.foldLeft(orderedDF) { (df, ticker) =>
+    tickers.foldLeft(df) { (innerDf, innerTicker) =>
+      if (ticker != innerTicker) {
+        innerDf.withColumn(innerTicker, coalesce(col(innerTicker), col(ticker)))
+      } else {
+        innerDf
+      }
+    }
+  }
+
+  symmetricalDF
 }
 
 def annualizeCovarianceMatrix(covarianceMatrixDF: DataFrame): DataFrame = {
@@ -128,36 +172,41 @@ def annualizeCovarianceMatrix(covarianceMatrixDF: DataFrame): DataFrame = {
 
 
 def calculateCovarianceMatrix(dataFrame: DataFrame, tickers: Seq[String], spark: SparkSession): DataFrame = {
-  import spark.implicits._
 
-  // Preparing column names with daily return suffix
-  val tickers_daily = tickers.map(ticker => s"${ticker}_daily_return")
-
-  // Calculating covariances for each unique pair of tickers
   val covariances = for {
-    ticker1 <- tickers_daily
-    ticker2 <- tickers_daily
-    cov = dataFrame.stat.cov(ticker1, ticker2)
-  } yield (ticker1.replace("_daily_return", ""), ticker2.replace("_daily_return", ""), cov)
+    ticker1 <- tickers
+    ticker2 <- tickers
+    cov = dataFrame.stat.cov(s"${ticker1}_daily_return", s"${ticker2}_daily_return")
+  } yield ((ticker1, ticker2), cov)
 
-  val covarianceDF = covariances.toDF("Ticker1", "Ticker2", "Covariance")
+  val covarianceMap = covariances.toMap
+  val schema = StructType(StructField("Ticker", StringType, nullable = false) +: tickers.map(StructField(_, DoubleType, nullable = true)))
+  val initialRows = tickers.map(ticker => Row.fromSeq(ticker +: List.fill(tickers.length)(null)))
 
-  // Pivoting the DataFrame to get the matrix format
-  val covarianceMatrixDF = covarianceDF.groupBy("Ticker1").pivot("Ticker2").agg(first("Covariance"))
-  val annualizedcovarianceMatrixDF = annualizeCovarianceMatrix(covarianceMatrixDF)
+  val rows = initialRows.map { case Row(ticker: String, _*) =>
+    val rowValues = tickers.map(tickerCol => covarianceMap.getOrElse((ticker, tickerCol), Double.NaN))
+    Row.fromSeq(ticker +: rowValues)
+  }
+
+  val covarianceDF = spark.createDataFrame(spark.sparkContext.parallelize(rows), schema)
+  val annualizedcovarianceMatrixDF = annualizeCovarianceMatrix(covarianceDF)
   annualizedcovarianceMatrixDF
 }
+
+
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
       .appName("Portfolio-Optimization")
       .master("local[*]") // Use "local[*]" for local testing; replace with your cluster settings for production
       .getOrCreate()
-    val stockList = List("IBM", "AAPL", "MSFT")
-    val min_date = "2018-10-01"
+    val apiKey = sys.env("ALPHA_VANTAGE_API_KEY")
+    val stockList = List("MSFT", "KO", "TSLA", "AAPL", "IBM", "AMZN", "GOOG")
+    val min_date = "2023-10-01"
     val max_date = "2023-10-10"
-    val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, min_date, max_date)
-    val PortfolioDailyReturn = MainCalculations.dailyReturnMultipleStocksOptimized(dfMutipleStocks)
+
+    val dfMutipleStocks = getMultipleStocks(stockList, spark, apiKey, min_date, max_date)
+    val PortfolioDailyReturn = dailyReturnMultipleStocksOptimized(dfMutipleStocks)
     val (meanReturnDF, volatilityDF) = createReturnAndVolatilityDataFrames(PortfolioDailyReturn, stockList, spark)
 
     

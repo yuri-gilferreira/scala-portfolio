@@ -7,11 +7,11 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.Row
 
 import com.YuriFerreira.PortfolioOptimization.TestUtils
-import org.apache.spark.sql.types.{StructType, StructField, DoubleType, StringType, NullType}
+import org.apache.spark.sql.types.{StructType, StructField, DoubleType, StringType}
 
 
 class MainCalculationsTest extends AnyWordSpec with Matchers {
-
+  val apikey = sys.env("ALPHA_VANTAGE_API_KEY")
   val spark: SparkSession = SparkSession.builder()
         .appName("Testing")
         .master("local[*]")
@@ -23,7 +23,7 @@ class MainCalculationsTest extends AnyWordSpec with Matchers {
       val ticker = "IBM"
       val min_date = "2023-10-01"
       val max_date = "2023-10-10"
-      val testing = MainCalculations.getSingleStock(ticker, spark, min_date, max_date)
+      val testing = MainCalculations.getSingleStock(ticker, spark, apikey,  min_date, max_date)
       testing.show()
     }
   }
@@ -33,7 +33,7 @@ class MainCalculationsTest extends AnyWordSpec with Matchers {
       val tickers = List("IBM", "AAPL", "MSFT")
       val min_date = "2023-10-01"
       val max_date = "2023-10-10"
-      val testing = MainCalculations.getMultipleStocks(tickers, spark, min_date, max_date)
+      val testing = MainCalculations.getMultipleStocks(tickers, spark, apikey, min_date, max_date)
       testing.show()
     }
   }
@@ -43,7 +43,7 @@ class MainCalculationsTest extends AnyWordSpec with Matchers {
      val tickers = List("IBM", "AAPL")
       val min_date = "2023-10-01"
       val max_date = "2023-10-10"
-      val testing = MainCalculations.getMultipleStocks(tickers, spark, min_date, max_date)
+      val testing = MainCalculations.getMultipleStocks(tickers, spark, apikey, min_date, max_date)
       val result = MainCalculations.dailyReturnMultipleStocksOptimized(testing)
       result.show()
   }
@@ -101,4 +101,5 @@ class MainCalculationsTest extends AnyWordSpec with Matchers {
     
   }
 }
+
 }

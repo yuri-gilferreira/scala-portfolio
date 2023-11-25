@@ -4,8 +4,12 @@ object Dependencies {
   lazy val scalaTest = Seq(
     "org.scalatest" %% "scalatest" % "3.2.13" % Test,
     "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % Test,
-     "com.holdenkarau" %% "spark-testing-base" % "3.5.0_1.4.7" % Test
-  )
+     "com.holdenkarau" %% "spark-testing-base" % "3.5.0_1.4.7" % Test,
+    "com.typesafe.akka" %% "akka-http-testkit" % "10.2.7" % Test,
+    "com.typesafe.akka" %% "akka-actor-testkit-typed" % "2.6.18" % Test,
+    "com.typesafe.akka" %% "akka-stream-testkit" % "2.6.18" % Test
+)
+
 
   val circeVersion = "0.13.0"
   val pureconfigVersion = "0.15.0"
@@ -37,6 +41,13 @@ object Dependencies {
     
     // logging
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-    "ch.qos.logback" % "logback-classic" % "1.2.3"
+    "ch.qos.logback" % "logback-classic" % "1.2.3",
+
+    //API
+    "com.typesafe.akka" %% "akka-http" % "10.2.7",
+    "com.typesafe.akka" %% "akka-http-spray-json" % "10.2.7",
+    "com.typesafe.akka" %% "akka-actor-typed" % "2.6.18",
+    "com.typesafe.akka" %% "akka-stream" % "2.6.18"
+
   )
 }

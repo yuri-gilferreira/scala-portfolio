@@ -6,6 +6,7 @@ import scala.util.{Try, Success, Failure}
 object ApiCallAlphaVantage {
   def fetchDataFromAPI(
     symbol: String, 
+    apikey: String, 
     function: String = "TIME_SERIES_DAILY_ADJUSTED",
     datatype: String = "csv",
     outputsize: String = "compact"
@@ -14,7 +15,7 @@ object ApiCallAlphaVantage {
     val params = Map(
       "function" -> function, 
       "symbol" -> symbol,  
-      "apikey" -> "2FYQYEAUFMJCT69A",
+      "apikey" -> apikey,
       "datatype" ->  datatype,
       "outputsize" -> outputsize
     )
@@ -32,7 +33,8 @@ object ApiCallAlphaVantage {
   }
 
   def main(args: Array[String]): Unit = {
-    val testing = fetchDataFromAPI("IBM", outputsize = "full")
+    val apikey = sys.env("ALPHA_VANTAGE_API_KEY")
+    val testing = fetchDataFromAPI("IBM", apikey,outputsize = "full")
     println(testing)
   }
 }

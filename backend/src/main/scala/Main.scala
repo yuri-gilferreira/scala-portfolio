@@ -2,44 +2,13 @@
 package com.YuriFerreira.PortfolioOptimization
 
 import org.apache.spark.sql.SparkSession
-import scopt.OParser
 import com.YuriFerreira.PortfolioOptimization.MainCalculations
 import com.YuriFerreira.PortfolioOptimization.Simulations
 import com.YuriFerreira.PortfolioOptimization.SparkFunctions
-// import org.apache.spark.sql.functions.col
 
-
-case class Config(stockList: String = "",
-                  originalWeights: String = "",
-                  dateRange: String = "")
 
 object Main extends App {
-   val builder = OParser.builder[Config]
-   val parser = {
-      import builder._
-      OParser.sequence(
-         programName("Portfolio-Optimization"),
-         opt[String]('s', "stockList")
-            .required()
-            .action((x, c) => c.copy(stockList = x))
-            .text("List of stocks, comma-separated"),
-         opt[String]('w', "originalWeights")
-            .required()
-            .action((x, c) => c.copy(originalWeights = x))
-            .text("Original weights, comma-separated"),
-         opt[String]('d', "dateRange")
-            .required()
-            .action((x, c) => c.copy(dateRange = x))
-            .text("Date range, start and end dates separated by a comma")
-      )
-   }
-
-   OParser.parse(parser, args, Config()) match {
-      case Some(config) =>
-         runMain(config)
-      case _ =>
-         println("Invalid arguments")
-   }
+   WebServer.main(Array.empty)
 
    def runMain(config: Config): Unit = {
       val spark = SparkSession.builder()
@@ -48,18 +17,28 @@ object Main extends App {
          .getOrCreate()
 
       import spark.implicits._
-
-      // MainCalculations.main(args)
+      
       val stockList = config.stockList.split(",").toList
       val originalWeights = config.originalWeights.split(",").map(_.toDouble)
       val dateRange = config.dateRange.split(",")
       val min_date = dateRange(0)
       val max_date = dateRange(1)
+      val riskFreeRate = config.riskFreeRate
+      val numSimulations = config.numSimulations
+      val userKey = config.apiKey
+
+      println(s"Received stockList: ${stockList}")
+      println(s"Received originalWeights: ${originalWeights}")      
+      println(s"Received min_date: ${min_date}")
+      println(s"Received max_date: ${max_date}")
+      println(s"Received riskFreeRate: ${riskFreeRate}")
+      println(s"Received numSimulations: ${numSimulations}")
+      println(s"Received userKey: ${userKey}")
       
       val dataFolder = "../data"
 
        // Main Calculations 
-       val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, min_date, max_date)
+       val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, userKey,  min_date, max_date)
        val PortfolioDailyReturn = MainCalculations.dailyReturnMultipleStocksOptimized(dfMutipleStocks)
        val (meanReturnDF, volatilityDF) = MainCalculations.createReturnAndVolatilityDataFrames(PortfolioDailyReturn, stockList, spark)
 
@@ -67,22 +46,21 @@ object Main extends App {
        val covarianceMatrixDF = MainCalculations.calculateCovarianceMatrix(PortfolioDailyReturn, stockList, spark)
 
        val meanReturns: Array[Double] = meanReturnDF.select("MeanReturn").as[Double].collect() 
-       val covarianceMatrix: Array[Array[Double]] = covarianceMatrixDF.drop("Ticker1").collect().map { 
+       val covarianceMatrix: Array[Array[Double]] = covarianceMatrixDF.drop("Ticker").collect().map { 
          row => row.toSeq.toArray.map(_.toString.toDouble)
       }
 
 
-       // Simulation and Optimization
-       val numSimulations = 10000
-       val results = Simulations.runMonteCarloSimulationSpark(meanReturns, covarianceMatrix, spark)
-       val originalWeightDf = Simulations.getOriginalWeightsReturns(originalWeights, meanReturns, covarianceMatrix, spark)
+      // Simulation and Optimization
+       val results = Simulations.runMonteCarloSimulationSpark(meanReturns, covarianceMatrix, spark, numSimulations.toInt, riskFreeRate)
+       val originalWeightDf = Simulations.getOriginalWeightsReturns(originalWeights, meanReturns, covarianceMatrix, spark, riskFreeRate)
        val bestResults = Simulations.getBestResults(results,originalWeightDf)
 
-       // Portfolio Returns
+      // Portfolio Returns
       val portfolioReturns = PortfolioReturns.getAllPortfolioReturns(bestResults, PortfolioDailyReturn, stockList)
       val compoundedReturns = PortfolioReturns.compoundReturnMultiplePortfolios(portfolioReturns)
 
-       // Save results to CSV
+      //  Save results to CSV
 
        results.show()
        SparkFunctions.saveDataFrameToCSV(results, dataFolder, "simulations.csv")

@@ -3,15 +3,14 @@ package com.YuriFerreira.PortfolioOptimization
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 import org.apache.spark.sql.SparkSession
-
-// Import your ApiCalls object. Adjust the import statement according to your package structure.
 import com.YuriFerreira.PortfolioOptimization.PortfolioReturns 
-import org.apache.spark.sql.types.{StructType, StructField, DoubleType, StringType, NullType}
+import org.apache.spark.sql.types.{StructType, StructField, DoubleType, StringType}
 import org.apache.spark.sql.functions._
 
 import org.apache.spark.sql.Row
 
 class PortfolioReturnsTest extends AnyWordSpec with Matchers {
+  val apikey = sys.env("ALPHA_VANTAGE_API_KEY")
   val spark: SparkSession = SparkSession.builder()
         .appName("Testing")
         .master("local[*]")
@@ -22,7 +21,7 @@ class PortfolioReturnsTest extends AnyWordSpec with Matchers {
       val stockList = List("IBM", "AAPL", "MSFT")
       val min_date = "2023-10-05"
       val max_date = "2023-10-10"
-      val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, min_date, max_date)
+      val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, apikey,  min_date, max_date)
       val dfDailyReturn = MainCalculations.dailyReturnMultipleStocksOptimized(dfMutipleStocks)
       val result = PortfolioReturns.portfolioDailyReturn(Array(0.3, 0.3, 0.4), dfDailyReturn, stockList, "test")
 
@@ -53,7 +52,7 @@ class PortfolioReturnsTest extends AnyWordSpec with Matchers {
       val stockList = List("IBM", "AAPL", "MSFT")
       val min_date = "2023-10-05"
       val max_date = "2023-10-10"
-      val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, min_date, max_date)
+      val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, apikey, min_date, max_date)
       val dfDailyReturn = MainCalculations.dailyReturnMultipleStocksOptimized(dfMutipleStocks)
 
       val bestResultsDF = Seq(
@@ -64,13 +63,6 @@ class PortfolioReturnsTest extends AnyWordSpec with Matchers {
 
          val result = PortfolioReturns.getAllPortfolioReturns(bestResultsDF, dfDailyReturn, stockList)
         result.show()
-
-      // val expectedSchema = StructType(
-      //       StructField("timestamp", StringType, nullable = true) ::
-      //         StructField("portfolio_sharpe_daily_return", DoubleType, nullable = true) ::
-      //         StructField("portfolio_test_daily_return", DoubleType, nullable = true) ::
-      //         StructField("portfolio_risk_daily_return", DoubleType, nullable = true) :: Nil
-      //         )
             }
   }
   "getCompoundReturnSinglePortfolio" should {
@@ -78,7 +70,7 @@ class PortfolioReturnsTest extends AnyWordSpec with Matchers {
       val stockList = List("IBM", "AAPL", "MSFT")
       val min_date = "2023-10-05"
       val max_date = "2023-10-10"
-      val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, min_date, max_date)
+      val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, apikey,  min_date, max_date)
       val dfDailyReturn = MainCalculations.dailyReturnMultipleStocksOptimized(dfMutipleStocks)
 
       val portfolioReturns = PortfolioReturns.portfolioDailyReturn(Array(0.3, 0.3, 0.4), dfDailyReturn, stockList, "test")

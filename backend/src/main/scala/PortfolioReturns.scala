@@ -83,7 +83,8 @@ def compoundReturnMultiplePortfolios(portfolioReturns: DataFrame): DataFrame = {
     val stockList = List("IBM", "AAPL", "MSFT")
     val min_date = "2023-10-01"
     val max_date = "2023-10-10"
-    val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, min_date, max_date)
+    val apikey = sys.env("ALPHA_VANTAGE_API_KEY")
+    val dfMutipleStocks = MainCalculations.getMultipleStocks(stockList, spark, apikey,min_date, max_date)
     val dfDailyReturn = MainCalculations.dailyReturnMultipleStocksOptimized(dfMutipleStocks)
     val testing = portfolioDailyReturn(Array(0.3, 0.3, 0.4), dfDailyReturn, stockList, "test")
     dfDailyReturn.show()

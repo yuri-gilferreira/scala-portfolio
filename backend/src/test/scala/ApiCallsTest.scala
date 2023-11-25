@@ -7,7 +7,9 @@ import com.YuriFerreira.PortfolioOptimization.ApiCallAlphaVantage
 class ApiCallTest extends AnyFunSuite {
   
   test("fetchDataFromAPI should return successful result") {
-    val testing = ApiCallAlphaVantage.fetchDataFromAPI("PEP", outputsize = "full")
+    val apikey = sys.env("ALPHA_VANTAGE_API_KEY")
+
+    val testing = ApiCallAlphaVantage.fetchDataFromAPI("PEP", apikey, outputsize = "compact")
     print(testing)
   }
 
