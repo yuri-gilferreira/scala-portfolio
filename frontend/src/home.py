@@ -30,4 +30,5 @@ For support or inquiries about the Portfolio Optimization Tool, feel free to rea
 
 - **Email**: [yuri.gferreira16@gmail.com](mailto:yuri.gferreira16@gmail.com)
 - **LinkedIn**: [Yuri Gil Ferreira's LinkedIn](https://www.linkedin.com/in/yuri-ferreira-354a07154/) 
+- **GitHub**: [Yuri Gil Ferreira's GitHub](https://github.com/yuri-gilferreira)
         """)

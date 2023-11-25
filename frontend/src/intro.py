@@ -55,6 +55,21 @@ def show_intro_page():
                 - $$ \mathbf{w}^T $$ is the transpose of the weight vector.
                 """, unsafe_allow_html=True)
 
+    st.markdown("""
+                **Sharpe Ratio**: The Sharpe Ratio is a widely used metric to measure the risk-adjusted return of an investment portfolio. It is calculated by subtracting the risk-free rate from the portfolio's return and then dividing by the portfolio's standard deviation (volatility). The formula for the Sharpe Ratio is:
+                """)
+    st.markdown(r'##### $$ Sharpe\ Ratio = \frac{R_p - R_f}{\sigma_p} $$', unsafe_allow_html=True)
+    st.markdown(r"""
+               Where:
+                - $$ R_p $$ is the expected portfolio return.
+                - $$ R_f $$ is the risk-free rate of return.
+                - $$ \sigma_p $$ is the standard deviation of the portfolio's excess return (volatility).
+
+                """, unsafe_allow_html=True)
+    
+    st.markdown(""" A higher Sharpe Ratio indicates a more desirable risk-adjusted return. In the context of Modern Portfolio Theory (MPT), investors aim to maximize this ratio to optimize the balance between return and risk.
+                """)
     st.markdown(""" Our tool uses these principles and mathematical models to assist you in creating a portfolio tailored to your desired risk and return levels.""")
-    st.markdown(""" If you would like to learn more about MPT, check out this [article](https://www.investopedia.com/terms/m/modernportfoliotheory.asp) on Investopedia.""")    
+    st.markdown(""" If you would like to learn more about MPT, check out this [article](https://www.investopedia.com/terms/m/modernportfoliotheory.asp) on Investopedia.""")   
+
 

@@ -93,6 +93,8 @@ The Home tab serves as the introduction and guide to the application:
 - **How to Use**: Basic instructions on navigating and utilizing the application effectively.
 - **Contact Information**: Details for support or additional information.
 
+  ![Home Page](resources/home.png)
+
 ### 2. How It Works Tab
 This tab provides insights into the technical and theoretical aspects of the tool:
 
@@ -115,11 +117,16 @@ The Results tab presents the outcome of the portfolio optimization in various fo
   - Compound Returns Overtime for the best Sharpe ratio portfolio, least risk portfolio, and the portfolio with original weight.
   - Portfolio Weight Comparison across different portfolios.
 
+![Results Plots Page](resources/results.png)
+
+
 - **Tables**:
   - Mean Annualized Returns for each stock in the portfolio.
   - Annualized Volatility of the portfolio.
   - Correlation Matrix showing the relationships between different stocks.
   - Covariance Matrix of the stock returns.
+
+  ![Tables ](resources/results_tables.png)
 
 ### Navigating Through the Application
 Navigation through the application is done using the sidebar, which allows you to easily switch between different tabs. Each tab provides a unique aspect of portfolio analysis and optimization, guiding you through the entire process step by step.
