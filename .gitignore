@@ -83,10 +83,10 @@ frontend/node_modules/
 # Frontend build artifacts (if using a build tool like webpack)
 frontend/build/
 frontend/dist/
+frontend/src/__pycache__/
 
 # IDE specific settings
 .vscode
-
 
 # Logs
 *.log
