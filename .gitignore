@@ -25,6 +25,8 @@ secrets
 backend/target/
 backend/project/target/
 backend/project/project/
+backend/project/.bloop/
+backend/.bsp/
 backend/.lib/
 backend/.bloop
 backend/.metals
