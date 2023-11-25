@@ -125,6 +125,67 @@ The Results tab presents the outcome of the portfolio optimization in various fo
 Navigation through the application is done using the sidebar, which allows you to easily switch between different tabs. Each tab provides a unique aspect of portfolio analysis and optimization, guiding you through the entire process step by step.
 
 
+## Architecture Diagram
+
+
+Below is the architecture diagram of the Portfolio Optimization Tool. This diagram provides an overview of how the various components of the application interact with each other, including the Scala backend, Python Streamlit frontend, and external data sources.
+
+![Architecture Diagram](resources/diagram.png)
+
+## Folder Structure
+
+```bash
+
++---backend
+|   |   build.sbt
+|   +---project
+|   |   |   assembly.sbt
+|   |   |   Dependencies.scala
+|   +---src
+|   |   +---main
+|   |   |   \---scala
+|   |   |           ApiCalls.scala
+|   |   |           JsonFormats.scala
+|   |   |           Main.scala
+|   |   |           MainCalculations.scala
+|   |   |           PortfolioReturns.scala
+|   |   |           Simulations.scala
+|   |   |           SparkFunctions.scala
+|   |   |           WebServer.scala
+|   |   |           
+|   |   \---test
+|   |       \---scala
+|   |               ApiCallsTest.scala
+|   |               JsonFormatsTest.scala
+|   |               MainCalculationsTest.scala
+|   |               PortfolioReturnsTest.scala
+|   |               SimulationsTest.scala.scala
+|   |               TestUtils.scala
+|   |               WebServerTest.scala
+|   |               
++---data
+|       .gitkeep
+|       
++---frontend
+|   |   requirements.txt
+|   |   __init__.py
+|   |   
+|   \---src
+|       |   app.py
+|       |   home.py
+|       |   inputs.py
+|       |   intro.py
+|       |   results.py
+|       |   utils.py
+|       |   __init__.py
+|               
+\---resources
+        diagram.png
+        risk_return.png
+        
+
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. The MIT License is a permissive license that is short and to the point. It lets people do anything they want with your code as long as they provide attribution back to you and don’t hold you liable.
