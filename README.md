@@ -93,13 +93,18 @@ The Home tab serves as the introduction and guide to the application:
 - **How to Use**: Basic instructions on navigating and utilizing the application effectively.
 - **Contact Information**: Details for support or additional information.
 
-  ![Home Page](resources/home.png)
+![Home Page](resources/home.png)
 
 ### 2. How It Works Tab
 This tab provides insights into the technical and theoretical aspects of the tool:
 
 - **How the Backend Works**: Explanation of the backend processes, data handling, and computation methods.
+
+![BackEnd Works](resources/backend_works.png)
+
 - **Understanding Modern Portfolio Theory (MPT)**: A brief overview of MPT principles and how they are applied in the tool.
+
+![MPT Explanation](resources/mpt_works.png)
 
 ### 3. Inputs Tab
 Here, users can input the necessary data for portfolio optimization:
@@ -108,6 +113,8 @@ Here, users can input the necessary data for portfolio optimization:
 - **Search for Stock Symbols**: Option to search and select specific stock symbols for analysis.
 - **Tickers**: Input field for entering stock tickers, separated by commas.
 - **Advanced Parameters**: Options to set advanced parameters like date range, portfolio weights, risk-free rate, and the number of simulations.
+
+![Inputs](resources/inputs.png)
 
 ### 4. Results Tab
 The Results tab presents the outcome of the portfolio optimization in various formats:
