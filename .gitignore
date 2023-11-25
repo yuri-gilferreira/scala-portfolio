@@ -85,7 +85,7 @@ frontend/build/
 frontend/dist/
 
 # IDE specific settings
-.vscode/
+.vscode
 
 
 # Logs
