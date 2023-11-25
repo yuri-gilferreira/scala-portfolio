@@ -23,6 +23,8 @@ secrets
 
 # Scala / SBT (backend)
 backend/target/
+backend/build.sbt
+backend/project/metals.sbt
 backend/project/target/
 backend/project/project/
 backend/project/.bloop/
