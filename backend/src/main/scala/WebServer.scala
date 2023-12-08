@@ -42,10 +42,5 @@ object WebServer {
       println(s"Failed to bind to localhost:8080!", e)
       system.terminate()
   }
-    // println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-    // scala.io.StdIn.readLine() // Let it run until user presses return
-    // bindingFuture
-    //   .flatMap(_.unbind()) // Trigger unbinding from the port
-    //   .onComplete(_ => system.terminate()) // and shutdown when done
   }
 }

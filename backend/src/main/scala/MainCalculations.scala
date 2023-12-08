@@ -100,37 +100,8 @@ def createReturnAndVolatilityDataFrames(dataFrame: DataFrame, tickers: Seq[Strin
   (meanReturnDF, volatilityDF)
 }
 
-// def calculateCorrelationMatrix(dataFrame: DataFrame, tickers: Seq[String], spark: SparkSession): DataFrame = {
-//   import spark.implicits._
-
-//   // Preparing column names with daily return suffix
-//   val tickersDaily = tickers.map(ticker => s"${ticker}_daily_return")
-
-//   // Calculating correlations for each unique pair of tickers
-//   val correlations = for {
-//     ticker1 <- tickersDaily
-//     ticker2 <- tickersDaily
-//   } yield {
-//     val corr = if (ticker1 == ticker2) 1.0 else dataFrame.stat.corr(ticker1, ticker2)
-//     (ticker1.replace("_daily_return", ""), ticker2.replace("_daily_return", ""), corr)
-//   }
-
-//   val correlationDF = correlations.toDF("Ticker1", "Ticker2", "Correlation")
-
-//   // Pivoting the DataFrame to get the matrix format
-//   val correlationMatrixDF = correlationDF
-//   .groupBy("Ticker1")
-//   .pivot("Ticker2",  tickers)
-//   .agg(first("Correlation"))
-
-//   correlationMatrixDF
-// }
-
 def calculateCorrelationMatrix(dataFrame: DataFrame, tickers: Seq[String], spark: SparkSession): DataFrame = {
   import spark.implicits._
-
-  // Preparing column names with daily return suffix
-  // val tickersDaily = tickers.map(ticker => s"${ticker}_daily_return")
 
   // Calculating correlations for each pair of tickers, including self-correlation
   val correlations = for {

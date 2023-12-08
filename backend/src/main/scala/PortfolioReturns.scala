@@ -89,11 +89,5 @@ def compoundReturnMultiplePortfolios(portfolioReturns: DataFrame): DataFrame = {
     val testing = portfolioDailyReturn(Array(0.3, 0.3, 0.4), dfDailyReturn, stockList, "test")
     dfDailyReturn.show()
     testing.show()
-
-
   }
-
-    
-
-  
 }
